@@ -1,5 +1,8 @@
 import shlex
 import argparse
+
+import readline
+
 from onedriver import *
 
 from commands.cd_command import CdCommand
@@ -26,11 +29,20 @@ COMMANDS = {'cd': CdCommand(drive),
 			'upload': UploadCommand(drive),
 			'download': DownloadCommand(drive)}
 
+def complete(text, state):
+	for cmd in COMMANDS:
+		if cmd.startswith(text):
+			if not state:
+				return cmd
+			else:
+				state -= 1
+
+readline.parse_and_bind("tab: complete")
+readline.set_completer(complete)
+
 
 while True:
-	print("%s>" % drive.pwd(), end='')
-
-	data = input()
+	data = input("%s>" % drive.pwd())
 
 	user_args = shlex.split(data)
 
