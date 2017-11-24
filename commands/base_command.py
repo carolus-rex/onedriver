@@ -2,8 +2,8 @@ import argparse
 
 
 class BaseCommand(object):
-	self.NAME = ''
-	self.DESCRIPTION = ''
+	NAME = ''
+	DESCRIPTION = ''
 
 	def __init__(self, drive):
 		self.drive = drive

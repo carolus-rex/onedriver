@@ -8,7 +8,7 @@ class DownloadCommand(BaseCommand):
 	DESCRIPTION = 'Downloads a file.'
 	
 	def __init__(self, drive):
-		super(DirCommand, self).__init__(drive)
+		super(DownloadCommand, self).__init__(drive)
 
 		self.parser.add_argument('remote_path',
 		 						 help='Specifies the file to download')
