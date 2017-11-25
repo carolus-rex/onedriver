@@ -19,7 +19,18 @@ class DirCommand(BaseCommand):
 								 action="store_true",
 								 dest='use_simple_format')
 
-	def execute(self, path, use_simple_format):
+		self.parser.add_argument('/C', '/c',
+								 help="Shows the thousand separator in file size. This is the default option. Use /-C to disable.",
+								 action="store_true",
+								 dest='use_thousand_separator',
+								 default=True)
+
+		self.parser.add_argument('/-C', '/-c',
+								 help=argparse.SUPPRESS,
+								 action="store_false",
+								 dest='use_thousand_separator')
+
+	def execute(self, path, use_simple_format, use_thousand_separator):
 		output_lines = []
 
 		if not use_simple_format:
@@ -36,7 +47,8 @@ class DirCommand(BaseCommand):
 					file_count += 1
 					total_data_size += item.size
 
-				output_lines.append(self.build_detailed_item(item))
+				output_lines.append(self.build_detailed_item(item,
+															 use_thousand_separator))
 				
 			else:
 				output_lines.append(item.name)
@@ -44,7 +56,8 @@ class DirCommand(BaseCommand):
 		if not use_simple_format:
 			output_lines.extend(self.build_summary(file_count,
 												   len(items) - file_count,
-												   total_data_size))
+												   total_data_size,
+												   use_thousand_separator))
 
 		print('\n'.join(output_lines))
 
@@ -67,7 +80,7 @@ class DirCommand(BaseCommand):
 
 		return header
 
-	def build_detailed_item(self, item):
+	def build_detailed_item(self, item, use_thousand_separator):
 		display_item_data = [item.last_modified_date_time.strftime('%d/%m/%Y  %I:%M %p'),
 							 '<DIR>' if item.file is None else item.size,
 							 item.name]
@@ -75,8 +88,9 @@ class DirCommand(BaseCommand):
 				
 		return '{}    {:{dir_size_align}14{separator}} {}'.format(*display_item_data,
 																  dir_size_align='>' if item.file is not None else '<',
-																  separator=',' if item.file is not None else '')
+																  separator=',' if item.file is not None and use_thousand_separator else '')
 
-	def build_summary(self, file_count, folder_count, total_data_size):
-		return ['{:>16} {:8} {:>12,} bytes'.format(file_count, 'files', total_data_size),
+	def build_summary(self, file_count, folder_count, total_data_size, use_thousand_separator):
+		return ['{:>16} {:8} {:>12{separator}} bytes'.format(file_count, 'files', total_data_size,
+															 separator=',' if use_thousand_separator else ''),
 				'{:>16} dirs'.format(folder_count - file_count)]
