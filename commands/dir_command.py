@@ -30,7 +30,13 @@ class DirCommand(BaseCommand):
 								 action="store_false",
 								 dest='use_thousand_separator')
 
-	def execute(self, path, use_simple_format, use_thousand_separator):
+		self.parser.add_argument('/L', '/l',
+								 help="Use lowercase.",
+								 action="store_true",
+								 dest='use_lowercase')
+
+	def execute(self, path, use_simple_format, use_thousand_separator,
+				use_lowercase):
 		output_lines = []
 
 		if not use_simple_format:
@@ -48,10 +54,11 @@ class DirCommand(BaseCommand):
 					total_data_size += item.size
 
 				output_lines.append(self.build_detailed_item(item,
-															 use_thousand_separator))
+															 use_thousand_separator,
+															 use_lowercase))
 				
 			else:
-				output_lines.append(item.name)
+				output_lines.append(item.name.lower() if use_lowercase else item.name)
 
 		if not use_simple_format:
 			output_lines.extend(self.build_summary(file_count,
@@ -80,10 +87,10 @@ class DirCommand(BaseCommand):
 
 		return header
 
-	def build_detailed_item(self, item, use_thousand_separator):
+	def build_detailed_item(self, item, use_thousand_separator, use_lowercase):
 		display_item_data = [item.last_modified_date_time.strftime('%d/%m/%Y  %I:%M %p'),
 							 '<DIR>' if item.file is None else item.size,
-							 item.name]
+							 item.name.lower() if use_lowercase else item.name]
 	
 				
 		return '{}    {:{dir_size_align}14{separator}} {}'.format(*display_item_data,
