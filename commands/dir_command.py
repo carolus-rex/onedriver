@@ -53,6 +53,11 @@ class DirCommand(BaseCommand):
 								 action="store_true",
 								 dest='use_wide_format')
 								 
+		self.parser.add_argument('/4',
+								 help="Display four-digit years.",
+								 action="store_true",
+								 dest='unused')
+								 
 	def execute(self, path, use_simple_format, use_thousand_separator,
 				use_lowercase, use_wide_format, use_wide_columns_format, unused):
 		output_lines = []
