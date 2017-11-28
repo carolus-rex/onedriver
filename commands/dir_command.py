@@ -3,6 +3,7 @@ import argparse
 from shutil import get_terminal_size
 
 from commands.base_command import BaseCommand
+from math import ceil as roof
 
 
 class DirCommand(BaseCommand):
@@ -31,6 +32,11 @@ class DirCommand(BaseCommand):
 								 help=argparse.SUPPRESS,
 								 action="store_false",
 								 dest='use_thousand_separator')
+								 
+		self.parser.add_argument('/D', '/d',
+								 help="Similar to wide listing but files are classified by columns",
+								 action="store_true",
+								 dest='use_wide_columns_format')
 
 		self.parser.add_argument('/L', '/l',
 								 help="Use lowercase.",
@@ -41,9 +47,9 @@ class DirCommand(BaseCommand):
 								 help="Use wide list format.",
 								 action="store_true",
 								 dest='use_wide_format')
-
+								 
 	def execute(self, path, use_simple_format, use_thousand_separator,
-				use_lowercase, use_wide_format):
+				use_lowercase, use_wide_format, use_wide_columns_format):
 		output_lines = []
 
 		items = list(self.drive.dir(path))
@@ -62,25 +68,25 @@ class DirCommand(BaseCommand):
 		file_count = 0
 		total_data_size = 0
 
-		if use_wide_format:
+		if use_wide_format or use_wide_columns_format:
 			item_max_length = self.get_max_item_name_length(items)
 			column_count = get_terminal_size().columns // item_max_length
 			#column_width = column_count * item_max_length
 			column_width = item_max_length
 
 			current_line = []
+			
+		if use_wide_columns_format:
+			line_count = len(items) / column_count
+			line_start = len(output_lines)
 
-		for item in items:
+		for item_index, item in enumerate(items):
 			if not use_simple_format:
 				if item.file is not None:
 					file_count += 1
 					total_data_size += item.size
 
-				if not use_wide_format:
-					output_lines.append(self.build_detailed_item(item,
-															 	 use_thousand_separator,
-															 	 use_lowercase))
-				else:
+				if use_wide_format:
 					if len(current_line) == column_count:
 						output_lines.append(' '.join(current_line))
 						current_line = []
@@ -88,10 +94,26 @@ class DirCommand(BaseCommand):
 					current_line.append(self.build_wide_item(item, 
 															 column_width))
 				
+				elif use_wide_columns_format:
+					current_line_index = line_start + int(item_index % line_count)
+					
+					try:
+						output_lines[current_line_index]
+					except IndexError:
+						output_lines.append('')
+						
+					output_lines[current_line_index] += ' ' + self.build_wide_item(item,
+																				   column_width)
+															 
+				else:
+					output_lines.append(self.build_detailed_item(item,
+															 	 use_thousand_separator,
+															 	 use_lowercase))					
+				
 			else:
 				output_lines.append(item.name.lower() if use_lowercase else item.name)
 
-		if use_wide_format and not use_simple_format:
+		if use_wide_format or use_wide_columns_format and not use_simple_format:
 			output_lines.append(' '.join(current_line))
 
 		if not use_simple_format:
