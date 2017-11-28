@@ -42,6 +42,11 @@ class DirCommand(BaseCommand):
 								 help="Use lowercase.",
 								 action="store_true",
 								 dest='use_lowercase')
+								 
+		self.parser.add_argument('/R', '/r',
+								 help="Display alternate data streams.",
+								 action="store_true",
+								 dest='unused')
 
 		self.parser.add_argument('/W', '/w',
 								 help="Use wide list format.",
@@ -49,7 +54,7 @@ class DirCommand(BaseCommand):
 								 dest='use_wide_format')
 								 
 	def execute(self, path, use_simple_format, use_thousand_separator,
-				use_lowercase, use_wide_format, use_wide_columns_format):
+				use_lowercase, use_wide_format, use_wide_columns_format, unused):
 		output_lines = []
 
 		items = list(self.drive.dir(path))
