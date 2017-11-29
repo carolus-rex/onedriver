@@ -27,11 +27,12 @@ class OneDrive(object):
 	SESSION_FILE = USER_PATH + '/' + 'onedriver.session'
 
 	def __init__(self):
-		print("STARTING CONNECTION")
 		self.client_id = ''
 		self.client_secret = ''
 
+		print("STARTING CONNECTION")
 		self.client = self.mauthenticator()
+		self.owner = self._get_owner()
 		print("CONNECTION STARTED")
 
 		self.working_dir_id = "root"
@@ -94,7 +95,7 @@ class OneDrive(object):
 			client = onedrivesdk.OneDriveClient(api_base_url, auth_provider, http_provider)
 		else:
 			client = onedrivesdk.OneDriveClient(api_base_url, auth_provider, http_provider)
-			
+
 			auth_url = client.auth_provider.get_auth_url(redirect_uri)
 			# Ask for the code
 			print('Paste this URL into your browser, approve the app\'s access.')
@@ -129,6 +130,9 @@ class OneDrive(object):
 		client = onedrivesdk.OneDriveClient(service_info.service_resource_id + '/_api/v2.0/', auth, http)
 
 		return client
+
+	def _get_owner(self):
+		return self.client.drive.get().owner.user.display_name
 
 	def get_item(self, id):
 		return self.client.item(drive="me", id=id).get()
@@ -199,7 +203,7 @@ class OneDrive(object):
 	def cd(self, path):
 		if path != '':
 			item = self.get_item(self.find_item_id(path))
-			
+
 			if item.folder is None:
 				raise InvalidRemoteDirectoryError
 			else:
@@ -214,7 +218,7 @@ class OneDrive(object):
 
 	def dir(self, path):
 		return self.get_items(self.find_item_id(path))
-		
+
 	def mkdir(self, *paths):
 		created_dirs = []
 		for path in paths:
@@ -246,7 +250,7 @@ class OneDrive(object):
 		remote_head_path, remote_filename = split(remote_path)
 
 		file_name = (file_name if remote_filename == '' or remote_filename in ('.', '..') else remote_filename)
-		
+
 		id = self.find_item_id(remote_path if remote_filename in ('.', '..') else remote_head_path)
 
 		self.client.item(drive='me', id=id).children[file_name].upload(local_path)

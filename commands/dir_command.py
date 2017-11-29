@@ -43,6 +43,11 @@ class DirCommand(BaseCommand):
 								 action="store_true",
 								 dest='use_lowercase')
 								 
+		self.parser.add_argument('/Q', '/q',
+								 help="Display the owner of the file.",
+								 action="store_true",
+								 dest='show_owner')
+								 
 		self.parser.add_argument('/R', '/r',
 								 help="Display alternate data streams.",
 								 action="store_true",
@@ -59,7 +64,8 @@ class DirCommand(BaseCommand):
 								 dest='unused')
 								 
 	def execute(self, path, use_simple_format, use_thousand_separator,
-				use_lowercase, use_wide_format, use_wide_columns_format, unused):
+				use_lowercase, use_wide_format, use_wide_columns_format,
+				show_owner, unused):
 		output_lines = []
 
 		items = list(self.drive.dir(path))
@@ -118,7 +124,8 @@ class DirCommand(BaseCommand):
 				else:
 					output_lines.append(self.build_detailed_item(item,
 															 	 use_thousand_separator,
-															 	 use_lowercase))					
+															 	 use_lowercase,
+																 show_owner))
 				
 			else:
 				output_lines.append(item.name.lower() if use_lowercase else item.name)
@@ -142,15 +149,16 @@ class DirCommand(BaseCommand):
 
 		return header
 
-	def build_detailed_item(self, item, use_thousand_separator, use_lowercase):
+	def build_detailed_item(self, item, use_thousand_separator, use_lowercase, show_owner):
 		display_item_data = [item.last_modified_date_time.strftime('%d/%m/%Y  %I:%M %p'),
 							 '<DIR>' if item.file is None else item.size,
+							 self.drive.owner + '  ' if show_owner else '', # The owner is unique for the OneDrive account
 							 item.name.lower() if use_lowercase else item.name]
 	
 				
-		return '{}    {:{dir_size_align}14{separator}} {}'.format(*display_item_data,
-																  dir_size_align='>' if item.file is not None else '<',
-																  separator=',' if item.file is not None and use_thousand_separator else '')
+		return '{}    {:{dir_size_align}14{separator}} {}{}'.format(*display_item_data,
+																    dir_size_align='>' if item.file is not None else '<',
+																    separator=',' if item.file is not None and use_thousand_separator else '')
 
 	def build_wide_item(self, item, column_width):
 		return '{:{column_width}}'.format(item.name if item.folder is None else '[%s]' % item.name,
