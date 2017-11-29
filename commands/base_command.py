@@ -2,28 +2,27 @@ import argparse
 
 
 class BaseCommand(object):
-	NAME = ''
-	DESCRIPTION = ''
+    NAME = ''
+    DESCRIPTION = ''
 
-	def __init__(self, drive):
-		self.drive = drive
+    def __init__(self, drive):
+        self.drive = drive
 
-		self.parser = argparse.ArgumentParser(prog=self.NAME,
-											  description=self.DESCRIPTION,
-											  prefix_chars='/',
-											  add_help=False)
-											  
-		self.parser.add_argument("/?", action="help",
-								 help="show this help message and exit")
+        self.parser = argparse.ArgumentParser(prog=self.NAME,
+                                              description=self.DESCRIPTION,
+                                              prefix_chars='/',
+                                              add_help=False)
 
-	def execute(**args):
-		pass
+        self.parser.add_argument("/?", action="help",
+                                 help="show this help message and exit")
 
-	def parse(self, args):
-		return vars(self.parser.parse_args(args))
+    def execute(**args):
+        pass
 
-	def __call__(self, args):
-		parsed_args = self.parse(args)
+    def parse(self, args):
+        return vars(self.parser.parse_args(args))
 
-		return self.execute(**parsed_args)
+    def __call__(self, args):
+        parsed_args = self.parse(args)
 
+        return self.execute(**parsed_args)
