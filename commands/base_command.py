@@ -16,7 +16,7 @@ class BaseCommand(object):
         self.parser.add_argument("/?", action="help",
                                  help="show this help message and exit")
 
-    def execute(**args):
+    def execute(self, **kwargs):
         pass
 
     def parse(self, args):

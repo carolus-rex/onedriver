@@ -1,9 +1,7 @@
 import argparse
-
 from shutil import get_terminal_size
 
 from commands.base_command import BaseCommand
-from math import ceil as roof
 
 
 class DirCommand(BaseCommand):

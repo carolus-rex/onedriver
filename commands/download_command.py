@@ -1,5 +1,3 @@
-import argparse
-
 from commands.base_command import BaseCommand
 
 

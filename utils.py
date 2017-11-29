@@ -1,7 +1,5 @@
 import posixpath
 
-from time import strftime
-
 
 def isabs(path):
     return path.startswith('/')
@@ -25,11 +23,13 @@ def normpath(path):
 
 def join(a, *p):
     """Join two or more pathname components, inserting '/' as needed.
-	If any component is an absolute path, all previous path components
-	will be discarded.  An empty last part will result in a path that
-	ends with a separator."""
+    If any component is an absolute path, all previous path components
+    will be discarded.  An empty last part will result in a path that
+    ends with a separator."""
+
     sep = '/'
     path = a
+
     try:
         for b in p:
             if b.startswith(sep):
@@ -47,14 +47,3 @@ def join(a, *p):
                             "components.") from None
         raise
     return path
-
-
-def date_to_meridian(datestring):
-    if '.' in datestring:
-        timestamp = time.mktime(datetime.datetime.strptime(datestring, "%Y-%m-%d %H:%M:%S.%f").timetuple())
-    else:
-        timestamp = time.mktime(datetime.datetime.strptime(datestring, "%Y-%m-%d %H:%M:%S").timetuple())
-
-    return strftime('%d/%m/Y  %I:%M %p', timestamp)
-
-# print(os.path.normpath('/daily_metal'))
