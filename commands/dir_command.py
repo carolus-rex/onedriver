@@ -2,6 +2,7 @@ import argparse
 from shutil import get_terminal_size
 
 from commands.base_command import BaseCommand
+from utils import shortfilename
 
 
 class DirCommand(BaseCommand):
@@ -57,6 +58,11 @@ class DirCommand(BaseCommand):
                                  action="store_true",
                                  dest='use_wide_format')
 
+        self.parser.add_argument('/X', '/x',
+                                 help="As for /N but with the short file names included.",
+                                 action="store_true",
+                                 dest='show_short_filename')
+
         self.parser.add_argument('/4',
                                  help="Display four-digit years.",
                                  action="store_true",
@@ -64,7 +70,7 @@ class DirCommand(BaseCommand):
 
     def execute(self, path, use_simple_format, use_thousand_separator,
                 use_lowercase, use_wide_format, use_wide_columns_format,
-                show_owner, unused):
+                show_owner, show_short_filename, unused):
         output_lines = []
 
         items = list(self.drive.dir(path))
@@ -95,6 +101,9 @@ class DirCommand(BaseCommand):
             line_count = len(items) / column_count
             line_start = len(output_lines)
 
+        if not use_simple_format:
+            initials_counts = {}
+
         for item_index, item in enumerate(items):
             if not use_simple_format:
                 if item.file is not None:
@@ -124,7 +133,9 @@ class DirCommand(BaseCommand):
                     output_lines.append(self.build_detailed_item(item,
                                                                  use_thousand_separator,
                                                                  use_lowercase,
-                                                                 show_owner))
+                                                                 show_owner,
+                                                                 show_short_filename,
+                                                                 initials_counts))
 
             else:
                 output_lines.append(item.name.lower() if use_lowercase else item.name)
@@ -148,16 +159,17 @@ class DirCommand(BaseCommand):
 
         return header
 
-    def build_detailed_item(self, item, use_thousand_separator, use_lowercase, show_owner):
+    def build_detailed_item(self, item, use_thousand_separator, use_lowercase, show_owner, show_short_filename, initials_counts):
         display_item_data = [item.last_modified_date_time.strftime('%d/%m/%Y  %I:%M %p'),
                              '<DIR>' if item.file is None else item.size,
-                             self.drive.owner + '  ' if show_owner else '',
                              # The owner is unique for the OneDrive account
+                             self.drive.owner + '  ' if show_owner else '',
+                             "{:12}".format(shortfilename(item.name, initials_counts)) + ' ' if show_short_filename else '',
                              item.name.lower() if use_lowercase else item.name]
 
-        return '{}    {:{dir_size_align}14{separator}} {}{}'.format(*display_item_data,
-                                                                    dir_size_align='>' if item.file is not None else '<',
-                                                                    separator=',' if item.file is not None and use_thousand_separator else '')
+        return '{}    {:{dir_size_align}14{separator}} {}{}{}'.format(*display_item_data,
+                                                                      dir_size_align='>' if item.file is not None else '<',
+                                                                      separator=',' if item.file is not None and use_thousand_separator else '')
 
     def build_wide_item(self, item, column_width):
         return '{:{column_width}}'.format(item.name if item.folder is None else '[%s]' % item.name,
